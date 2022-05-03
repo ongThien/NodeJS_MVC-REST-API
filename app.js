@@ -51,7 +51,8 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 //CORS - CROSS ORIGIN RESOURCES SHARING
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
+  // res.setHeader("Access-Control-Allow-Headers", "X-Requested-With");
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, PATCH, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
@@ -72,8 +73,12 @@ mongoose
   `mongodb+srv://${process.env.mongoUser}:${process.env.mongoPW}@cluster0.ajqaw.mongodb.net/messages?retryWrites=true&w=majority`
   )
   .then(result => {
-    app.listen(8080, () => {
-      console.log('listening on http://localhost:8080');
-    })
+    // const httpServer = app.listen(8080);
+    const httpServer = require('http').createServer(app);
+    httpServer.listen(8080);
+    const io = require('./socket').init(httpServer);
+    io.on('connection', socket => {
+      console.log('Client Connected!');
+    });
   })
   .catch(err => console.log(err));
